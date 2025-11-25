@@ -1,13 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Panda File Upload</title>
+    <meta charset="UTF-8">
+    <title>Panda – File Upload & Audit</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <h1>Upload File</h1>
-    <form action="/upload" method="POST" enctype="multipart/form-data">
-        <input type="file" name="file">
-        <button type="submit">Upload</button>
+
+<div class="container">
+    <h2>Upload File</h2>
+
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="file" name="file" required>
+        <button type="button" onclick="upload()">Upload</button>
     </form>
+
+    <div id="uploadResult"></div>
+
+    <hr>
+
+    <h2>Audit File</h2>
+    <input type="text" id="auditFile" placeholder="Enter filename">
+    <button onclick="audit()">Check Integrity</button>
+
+    <p id="auditResult"></p>
+</div>
+
+<script>
+function upload() {
+    let fileInput = document.getElementById("file").files[0];
+    let formData = new FormData();
+    formData.append("file", fileInput);
+
+    fetch("/upload", { method: "POST", body: formData })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("uploadResult").innerHTML =
+            "<b>Uploaded:</b> " + data.filename +
+            "<br><b>SHA256:</b> " + data.sha256;
+    });
+}
+
+function audit() {
+    let filename = document.getElementById("auditFile").value;
+
+    fetch("/audit/" + filename)
+        .then(res => res.json())
+        .then(data => {
+            if (data.error)
+                document.getElementById("auditResult").innerHTML = "❌ File not found";
+            else
+                document.getElementById("auditResult").innerHTML =
+                    "<b>SHA256:</b> " + data.sha256;
+        });
+}
+</script>
+
 </body>
 </html>
