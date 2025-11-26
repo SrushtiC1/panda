@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panda Secure Upload</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="logo">🐼 Panda Secure Upload</div>
+        <ul class="nav-links">
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Help</a></li>
+        </ul>
+    </nav>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container">
+        <h1>Upload Your File Securely</h1>
+        <p class="sub-text">Your file will be stored with SHA-256 integrity verification.</p>
+
+        <div class="upload-box" id="dropArea">
+            <p>Drag & Drop your file here</p>
+            <span>or</span>
+            <input type="file" id="fileInput">
+            <button onclick="uploadFile()">Upload File</button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const dropArea = document.getElementById("dropArea");
+        const fileInput = document.getElementById("fileInput");
+
+        dropArea.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            dropArea.classList.add("drag-over");
+        });
+
+        dropArea.addEventListener("dragleave", () => {
+            dropArea.classList.remove("drag-over");
+        });
+
+        dropArea.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropArea.classList.remove("drag-over");
+
+            fileInput.files = e.dataTransfer.files;
+        });
+
+        async function uploadFile() {
+            const file = fileInput.files[0];
+            if (!file) {
+                alert("No file selected!");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const res = await fetch("/upload", { method: "POST", body: formData });
+            const data = await res.json();
+
+            document.getElementById("result").innerHTML = `
+                <div class="success-box">
+                    <p><strong>Upload Successful!</strong></p>
+                    <p>File: ${data.file}</p>
+                    <p>SHA-256: <span class="hash">${data.sha256}</span></p>
+                </div>
+            `;
+        }
+    </script>
+
+</body>
+</html>
+
